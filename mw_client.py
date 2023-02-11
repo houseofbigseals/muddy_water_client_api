@@ -107,31 +107,58 @@ def set_led(mwhandler, verbose, led, state):
 
 def on_led_measure(led, mwhandler, measure_interval, sleep_interval, verbose):
     # set led on
+    click.echo(time.time())
+
+    click.echo(datetime.datetime.now())
     if verbose:
         click.echo(f'Trying to set {led} led to state on')
     json_res = mwhandler.send_message("set_led", [led, True])
+    click.echo(datetime.datetime.now())
     if verbose:
         click.echo(json_res)
     click.echo("{} on: {}".format(led, json_res['args']['status']))
+    click.echo(datetime.datetime.now())
     # sleep
-    time.sleep(measure_interval)  # to stable led temp
+    time.sleep(measure_interval - 0.35)  # to stable led temp
+    # 0.35 sec is time of sending set_led command and getting answer
     # measure spectrum
+    click.echo(datetime.datetime.now())
     if verbose:
         click.echo('Trying to get spectrum from mw sensor')
     led_spectrum_json = mwhandler.send_message("get_spectrum", [0, 0])
+    # 0.45 sec is time of sending get_spectrum command and getting answer
+    click.echo(datetime.datetime.now())
     click.echo("get spectrum: {}".format(led_spectrum_json['args']['status']))
     if verbose:
         click.echo(led_spectrum_json)
     # turn led off
     if verbose:
         click.echo(f'Trying to set {led} led to state off')
+    click.echo(datetime.datetime.now())
     json_res = mwhandler.send_message("set_led", [led, False])
+    # 0.35 sec is time of sending set_led command and getting answer
     click.echo("{} off: {}".format(led, json_res['args']['status']))
     if verbose:
         click.echo(json_res)
+
+    # get temp
+    if verbose:
+        click.echo('Trying to get temp data from mw temp sensor')
+    temp_json = mwhandler.send_message("get_temp", [0, 0])
+    # 0.35 sec is time of sending get_temp command and getting answer
+    status = temp_json['args']['status']
+    temp_data = temp_json['args']['data'][0]
+    if verbose:
+        click.echo('Raw answer:')
+        click.echo(temp_json)
+        click.echo(f'Answer: {status}, Data: {temp_data}')
+
+    click.echo(datetime.datetime.now())
     # sleep
-    time.sleep(sleep_interval)
-    return led_spectrum_json
+    time.sleep(sleep_interval - 0.45 - 0.35 - 0.35)
+    click.echo(datetime.datetime.now())
+    click.echo(time.time())
+    return led_spectrum_json, temp_json
 
 
 @mw.command()
@@ -148,26 +175,19 @@ def series_measure(mwhandler, measure_interval, sleep_interval, verbose, number,
 
         # spectrums
         ir_time = datetime.datetime.now()
-        ir_spectrum_json = on_led_measure("ir", mwhandler, measure_interval, sleep_interval, verbose)
+        ir_spectrum_json, ir_temp_json = on_led_measure("ir", mwhandler, measure_interval, sleep_interval, verbose)
         white_time = datetime.datetime.now()
-        white_spectrum_json = on_led_measure("white", mwhandler, measure_interval, sleep_interval, verbose)
+        white_spectrum_json, white_temp_json = on_led_measure("white", mwhandler, measure_interval, sleep_interval, verbose)
         uv_time = datetime.datetime.now()
-        uv_spectrum_json = on_led_measure("uv", mwhandler, measure_interval, sleep_interval, verbose)
+        uv_spectrum_json, uv_temp_json = on_led_measure("uv", mwhandler, measure_interval, sleep_interval, verbose)
 
         ir_data = ir_spectrum_json['args']['data']
         white_data = white_spectrum_json['args']['data']
         uv_data = uv_spectrum_json['args']['data']
 
-        # finally temp
-        if verbose:
-            click.echo('Trying to get temp data from mw temp sensor')
-        temp_json = mwhandler.send_message("get_temp", [0, 0])
-        status = temp_json['args']['status']
-        temp_data = temp_json['args']['data'][0]
-        if verbose:
-            click.echo('Raw answer:')
-            click.echo(temp_json)
-            click.echo(f'Answer: {status}, Data: {temp_data}')
+        ir_temp_data = ir_temp_json['args']['data'][0]
+        white_temp_data = white_temp_json['args']['data'][0]
+        uv_temp_data = uv_temp_json['args']['data'][0]
 
         # write to csv
         if path:
@@ -175,7 +195,7 @@ def series_measure(mwhandler, measure_interval, sleep_interval, verbose, number,
                 dwriter = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
                 ir_data_row = [str(ir_time.date()),
                                 str(ir_time.time()),
-                                temp_data,
+                                ir_temp_data,
                                 measure_interval,
                                 sleep_interval,
                                 "ir"]
@@ -184,7 +204,7 @@ def series_measure(mwhandler, measure_interval, sleep_interval, verbose, number,
 
                 white_data_row = [str(white_time.date()),
                                 str(white_time.time()),
-                                temp_data,
+                                white_temp_data,
                                 measure_interval,
                                 sleep_interval,
                                 "white"]
@@ -193,19 +213,19 @@ def series_measure(mwhandler, measure_interval, sleep_interval, verbose, number,
 
                 uv_data_row = [str(uv_time.date()),
                                 str(uv_time.time()),
-                                temp_data,
+                                uv_temp_data,
                                 measure_interval,
                                 sleep_interval,
                                 "uv"]
                 uv_data_row.extend(uv_data)
                 dwriter.writerow(uv_data_row)
         else:
-            # print to console
+            # if no csv path selected, print to console
             click.echo()
-            click.echo(f"{ir_time} ir measure spectrum: {ir_data}")
-            click.echo(f"{white_time}  white measure spectrum: {white_data}")
-            click.echo(f"{uv_time} uv measure spectrum: {uv_data}")
-            click.echo(f"temperature: {temp_data}")
+            click.echo(f"{ir_time}, T:{ir_temp_data}, ir measure spectrum: {ir_data}")
+            click.echo(f"{white_time}, T:{white_temp_data}, white measure spectrum: {white_data}")
+            click.echo(f"{uv_time}, T:{uv_temp_data}, uv measure spectrum: {uv_data}")
+
 
 
 if __name__ == "__main__":

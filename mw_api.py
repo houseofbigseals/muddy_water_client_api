@@ -13,7 +13,7 @@ class MWHandler:
 
     """
     def __init__(self, addr: str = "/dev/serial/by-id/usb-1a86_USB_Serial-if00-port0",
-                 baudrate: int = 115200, timeout:int = 3):
+                 baudrate: int = 115200, timeout: int = 3):
         #
         self.ser = serial.Serial(addr, baudrate=baudrate, timeout=timeout)
         time.sleep(2)  # it is very important, because every serial.Serial creation restarts Arduino device
