@@ -107,6 +107,8 @@ def set_led(mwhandler, verbose, led, state):
 
 @mw.command()
 @click.option('-v', '--verbose', default=False, is_flag=True, help="verbosity")
+@click.option('-l', '--led', default='test', type=click.Choice(['test', 'uv', 'ir', 'white'], case_sensitive=False),
+              help="type of led to work with")
 @click.option('-mi', '--measure_interval', type=int, help="leds turn-on time in seconds")
 @click.option('-si', '--sleep_interval', type=int, help="leds turn-off time in seconds")
 @click.option('-p', '--path', default=None, type=click.Path(), help="path to csv file, if no output will go to console")
