@@ -105,6 +105,38 @@ def set_led(mwhandler, verbose, led, state):
     click.echo(f'Answer: {status}')
 
 
+@mw.command()
+@click.option('-v', '--verbose', default=False, is_flag=True, help="verbosity")
+@click.option('-mi', '--measure_interval', type=int, help="leds turn-on time in seconds")
+@click.option('-si', '--sleep_interval', type=int, help="leds turn-off time in seconds")
+@click.option('-p', '--path', default=None, type=click.Path(), help="path to csv file, if no output will go to console")
+@click.option('-n', '--number', default=1, type=int, help="number of measures")
+@click.pass_obj
+def measure(mwhandler, led, measure_interval, sleep_interval, verbose, path):
+    led_time = datetime.datetime.now()
+    spectrum_json, temp_json = on_led_measure(led, mwhandler, measure_interval, sleep_interval, verbose)
+
+    spectrum_data = spectrum_json['args']['data']
+
+    temp_data = temp_json['args']['data'][0]
+
+    # write to csv
+    if path:
+        with open(path, 'a+', newline='') as csvfile:
+            dwriter = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+            data_row = [str(led_time.date()),
+                           str(led_time.time()),
+                           temp_data,
+                           measure_interval,
+                           sleep_interval,
+                           led]
+            data_row.extend(spectrum_data)
+            dwriter.writerow(data_row)
+    else:
+        # if no csv path selected, print to console
+        click.echo(f"{led_time}, T:{temp_data}, ir measure spectrum: {spectrum_data}")
+
+
 def on_led_measure(led, mwhandler, measure_interval, sleep_interval, verbose):
     # set led on
     click.echo(time.time())
