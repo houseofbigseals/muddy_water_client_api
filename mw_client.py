@@ -10,8 +10,8 @@ import datetime
 # 1.
 # full_measure --time --pause --num --path/to/csv
 # does this:
-# measure temp, on ir led, wait time, measure spectrum, write it to csv off, ir led, wait pause time
 # measure temp,on white led, wait time, measure spectrum, write it to csv, off white led, wait pause time
+# measure temp, on ir led, wait time, measure spectrum, write it to csv off, ir led, wait pause time
 # measure temp,on uv led, wait time, measure spectrum, write it to csv, off uv led, wait pause time
 # run that num counts
 # 2.
@@ -27,9 +27,7 @@ import datetime
 # 5.
 # get_measure
 # just show on screen, no save to csv
-# 6.
-# start_new_exp --name --pause --time --someparams
-# creates new folder with new config and new csv
+
 
 
 @click.group()
@@ -211,33 +209,25 @@ def series_measure(mwhandler, measure_interval, sleep_interval, verbose, number,
     # one cycle of measurements
 
         # spectrums
-        ir_time = datetime.datetime.now()
-        ir_spectrum_json, ir_temp_json = on_led_measure("ir", mwhandler, measure_interval, sleep_interval, verbose)
         white_time = datetime.datetime.now()
         white_spectrum_json, white_temp_json = on_led_measure("white", mwhandler, measure_interval, sleep_interval, verbose)
+        ir_time = datetime.datetime.now()
+        ir_spectrum_json, ir_temp_json = on_led_measure("ir", mwhandler, measure_interval, sleep_interval, verbose)
         uv_time = datetime.datetime.now()
         uv_spectrum_json, uv_temp_json = on_led_measure("uv", mwhandler, measure_interval, sleep_interval, verbose)
 
-        ir_data = ir_spectrum_json['args']['data']
         white_data = white_spectrum_json['args']['data']
+        ir_data = ir_spectrum_json['args']['data']
         uv_data = uv_spectrum_json['args']['data']
 
-        ir_temp_data = ir_temp_json['args']['data'][0]
         white_temp_data = white_temp_json['args']['data'][0]
+        ir_temp_data = ir_temp_json['args']['data'][0]
         uv_temp_data = uv_temp_json['args']['data'][0]
 
         # write to csv
         if path:
             with open(path, 'a+', newline='') as csvfile:
                 dwriter = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
-                ir_data_row = [str(ir_time.date()),
-                                str(ir_time.time()),
-                                ir_temp_data,
-                                measure_interval,
-                                sleep_interval,
-                                "ir"]
-                ir_data_row.extend(ir_data)
-                dwriter.writerow(ir_data_row)
 
                 white_data_row = [str(white_time.date()),
                                 str(white_time.time()),
@@ -247,6 +237,15 @@ def series_measure(mwhandler, measure_interval, sleep_interval, verbose, number,
                                 "white"]
                 white_data_row.extend(white_data)
                 dwriter.writerow(white_data_row)
+
+                ir_data_row = [str(ir_time.date()),
+                                str(ir_time.time()),
+                                ir_temp_data,
+                                measure_interval,
+                                sleep_interval,
+                                "ir"]
+                ir_data_row.extend(ir_data)
+                dwriter.writerow(ir_data_row)
 
                 uv_data_row = [str(uv_time.date()),
                                 str(uv_time.time()),
@@ -259,8 +258,8 @@ def series_measure(mwhandler, measure_interval, sleep_interval, verbose, number,
         else:
             # if no csv path selected, print to console
             click.echo()
-            click.echo(f"{ir_time}, T:{ir_temp_data}, ir measure spectrum: {ir_data}")
             click.echo(f"{white_time}, T:{white_temp_data}, white measure spectrum: {white_data}")
+            click.echo(f"{ir_time}, T:{ir_temp_data}, ir measure spectrum: {ir_data}")
             click.echo(f"{uv_time}, T:{uv_temp_data}, uv measure spectrum: {uv_data}")
 
 
