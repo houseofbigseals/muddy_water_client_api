@@ -262,6 +262,76 @@ def series_measure(mwhandler, measure_interval, sleep_interval, verbose, number,
             click.echo(f"{ir_time}, T:{ir_temp_data}, ir measure spectrum: {ir_data}")
             click.echo(f"{uv_time}, T:{uv_temp_data}, uv measure spectrum: {uv_data}")
 
+@mw.command()
+@click.option('-v', '--verbose', default=False, is_flag=True, help="verbosity")
+@click.option('-mi', '--measure_interval', type=int, help="leds turn-on time in seconds")
+@click.option('-si', '--sleep_interval', type=int, help="leds turn-off time in seconds")
+@click.option('-pi', '--pause_interval', type=int, help="pause between measures in seconds")
+@click.option('-p', '--path', default=None, type=click.Path(), help="path to csv file, if no output will go to console")
+@click.option('-n', '--number', default=1, type=int, help="number of measures")
+@click.pass_obj
+def triple_measure(mwhandler, measure_interval, sleep_interval, pause_interval, verbose, number, path):
+
+    for i in range(0, number):
+    # one cycle of measurements
+
+        # spectrums
+        white_time = datetime.datetime.now()
+        white_spectrum_json, white_temp_json = on_led_measure("white", mwhandler, measure_interval, sleep_interval, verbose)
+        ir_time = datetime.datetime.now()
+        ir_spectrum_json, ir_temp_json = on_led_measure("ir", mwhandler, measure_interval, sleep_interval, verbose)
+        uv_time = datetime.datetime.now()
+        uv_spectrum_json, uv_temp_json = on_led_measure("uv", mwhandler, measure_interval, sleep_interval, verbose)
+
+        white_data = white_spectrum_json['args']['data']
+        ir_data = ir_spectrum_json['args']['data']
+        uv_data = uv_spectrum_json['args']['data']
+
+        white_temp_data = white_temp_json['args']['data'][0]
+        ir_temp_data = ir_temp_json['args']['data'][0]
+        uv_temp_data = uv_temp_json['args']['data'][0]
+
+        # write to csv
+        if path:
+            with open(path, 'a+', newline='') as csvfile:
+                dwriter = csv.writer(csvfile, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+
+                white_data_row = [str(white_time.date()),
+                                str(white_time.time()),
+                                white_temp_data,
+                                measure_interval,
+                                sleep_interval,
+                                "white"]
+                white_data_row.extend(white_data)
+                dwriter.writerow(white_data_row)
+
+                ir_data_row = [str(ir_time.date()),
+                                str(ir_time.time()),
+                                ir_temp_data,
+                                measure_interval,
+                                sleep_interval,
+                                "ir"]
+                ir_data_row.extend(ir_data)
+                dwriter.writerow(ir_data_row)
+
+                uv_data_row = [str(uv_time.date()),
+                                str(uv_time.time()),
+                                uv_temp_data,
+                                measure_interval,
+                                sleep_interval,
+                                "uv"]
+                uv_data_row.extend(uv_data)
+                dwriter.writerow(uv_data_row)
+        else:
+            # if no csv path selected, print to console
+            click.echo()
+            click.echo(f"{white_time}, T:{white_temp_data}, white measure spectrum: {white_data}")
+            click.echo(f"{ir_time}, T:{ir_temp_data}, ir measure spectrum: {ir_data}")
+            click.echo(f"{uv_time}, T:{uv_temp_data}, uv measure spectrum: {uv_data}")
+
+        # then wait pause after triple measure
+        time.sleep(pause_interval)
+
 
 
 if __name__ == "__main__":
