@@ -154,7 +154,7 @@ python3 mw_client.py measure -l white -mi 3 -si 1 -n 5 -p data.csv -v
 информацию. Например:
 
 ```
-python3 mw_client.py series_measure -mi 3 -si 1 -n 5 -p data.csv -v
+python3 mw_client.py series-measure -mi 3 -si 1 -n 5 -p data.csv -v
 ```
 
 Эта команда измеряет данные для всех трех светодиодов 
@@ -183,7 +183,7 @@ python3 mw_client.py series_measure -mi 3 -si 1 -n 5 -p data.csv -v
 информацию. Например:
 
 ```
-python3 mw_client.py triple_measure -mi 3 -si 1 -pi 30 -n 5 -p data.csv -v
+python3 mw_client.py triple-measure -mi 3 -si 1 -pi 30 -n 5 -p data.csv -v
 ```
 
 ### Формат csv-файла
