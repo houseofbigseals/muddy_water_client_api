@@ -43,7 +43,7 @@ python3 -m pip install pyserial
 
 Эта команда получает данные о температуре с устройства. Вы можете использовать флаг -v или --verbose, чтобы отобразить дополнительную информацию. Например:
 ```
-python3 mw_client.py get_temp -v
+python3 mw_client.py get-temp -v
 ```
 
 ### 2.  get-status
@@ -52,7 +52,7 @@ python3 mw_client.py get_temp -v
 Вы можете использовать флаг -v или --verbose, 
 чтобы отобразить дополнительную информацию. Например:
 ```
-python3 mw_client.py get_status -v
+python3 mw_client.py get-status -v
 ```
 эта команда выдает в ответ много загадочных полей, где:   
 
