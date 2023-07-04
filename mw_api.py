@@ -26,6 +26,23 @@ class MWHandler:
         self.master_addr = 1
         self.slave_addr = 2
 
+    def reset_serial(self):
+        """
+        close recent serial connection, wait a little, and create new with same params
+        :return:
+        """
+        self.ser.close()
+        time.sleep(2)
+        self.ser = serial.Serial(
+            self.addr,
+            self.baudrate,
+            self.timeout
+        )
+        time.sleep(2)  # it is very important, because every serial.Serial creation restarts Arduino device
+        self.ser.flushInput()
+        self.ser.flushOutput()
+
+
     def generate_json_master_message(self, command: str, params: list):
         """
         :param command:
