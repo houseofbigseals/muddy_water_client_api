@@ -39,8 +39,8 @@ class MWHandler:
             self.timeout
         )
         time.sleep(2)  # it is very important, because every serial.Serial creation restarts Arduino device
-        self.ser.flushInput()
-        self.ser.flushOutput()
+        # self.ser.flushInput()
+        # self.ser.flushOutput()
 
 
     def generate_json_master_message(self, command: str, params: list):

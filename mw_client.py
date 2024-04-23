@@ -165,17 +165,29 @@ def on_led_measure(led, mwhandler, measure_interval, sleep_interval, verbose):
         # so we just wait same time
         time.sleep(0.35)
 
-    # get temp
+    # get status
+
     if verbose:
-        click.echo('Trying to get temp data from mw temp sensor')
-    temp_json = mwhandler.send_message("get_temp", [0, 0])
+        click.echo('Trying to get full status data from mw device')
+    full_state_json = mwhandler.send_message("get_status", [0, 0])
+
     # 0.35 sec is time of sending get_temp command and getting answer
-    status = temp_json['args']['status']
-    temp_data = temp_json['args']['data'][0]
     if verbose:
         click.echo('Raw answer:')
-        click.echo(temp_json)
-        click.echo(f'Answer: {status}, Data: {temp_data}')
+        click.echo(full_state_json)
+
+    # if verbose:
+    #     click.echo('Trying to get external temp data from mw temp sensor')
+    # temp_json = mwhandler.send_message("get_temp", [0, 0])
+    #
+    # # 0.35 sec is time of sending get_temp command and getting answer
+    # status = temp_json['args']['status']
+    # temp_data = temp_json['args']['data'][0]
+    # if verbose:
+    #     click.echo('Raw answer:')
+    #     click.echo(temp_json)
+    #     click.echo(f'Answer: {status}, Data: {temp_data}')
+
 
     # sleep
     time.sleep(measure_interval - 0.35 - 0.35)  # to stable led temp
@@ -212,7 +224,7 @@ def on_led_measure(led, mwhandler, measure_interval, sleep_interval, verbose):
     time.sleep(sleep_interval - 0.45 - 0.35)
     click.echo(datetime.datetime.now())
     click.echo(time.time())
-    return led_spectrum_json, temp_json
+    return led_spectrum_json, full_state_json
 
 
 @mw.command()
