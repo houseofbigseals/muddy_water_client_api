@@ -343,10 +343,17 @@ def triple_measure(mwhandler, measure_interval, sleep_interval, pause_interval, 
             uv_data = uv_spectrum_json['args']['data']
             back_data = back_spectrum_json['args']['data']
 
-            white_temp_data = white_temp_json['args']['data'][0]
-            ir_temp_data = ir_temp_json['args']['data'][0]
-            uv_temp_data = uv_temp_json['args']['data'][0]
-            back_temp_data = back_temp_json['args']['data'][0]
+            # white_temp_data = white_temp_json['args']['data'][0]
+            # ir_temp_data = ir_temp_json['args']['data'][0]
+            # uv_temp_data = uv_temp_json['args']['data'][0]
+            # back_temp_data = back_temp_json['args']['data'][0]
+
+
+            # NOTE: it is temp of internal plate !
+            white_temp_data = white_temp_json['args']['temp0']
+            ir_temp_data = ir_temp_json['args']['temp0']
+            uv_temp_data = uv_temp_json['args']['temp0']
+            back_temp_data = back_temp_json['args']['temp0']
 
             # write to csv
             if path:
